@@ -1,0 +1,31 @@
+name: Regenerate PluginMaster
+on:
+  workflow_dispatch:
+concurrency: regenerate
+
+jobs:
+  generate:
+    name: Regenerate PluginMaster
+    runs-on: windows-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      - uses: actions/checkout@v2
+      - name: Run generator
+        run: .\Make-PluginMaster.ps1
+      - name: Add all changes to Git
+        run: git add -A
+      - name: Commit files
+        continue-on-error: true
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Regenerate PluginMaster" -a || echo "No changes to commit"
+      - name: Push changes
+        continue-on-error: true
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.extract_branch.outputs.branch }}
