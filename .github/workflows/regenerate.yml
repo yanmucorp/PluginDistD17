@@ -3,6 +3,9 @@ on:
   workflow_dispatch:
 concurrency: regenerate
 
+permissions:
+  contents: write
+
 jobs:
   generate:
     name: Regenerate PluginMaster
